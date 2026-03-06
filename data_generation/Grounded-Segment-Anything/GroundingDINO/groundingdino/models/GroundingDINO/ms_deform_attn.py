@@ -29,6 +29,7 @@ try:
     from groundingdino import _C
 except:
     warnings.warn("Failed to load custom C++ ops. Running on CPU mode Only!")
+    _C = None
 
 
 # helpers
@@ -50,14 +51,19 @@ class MultiScaleDeformableAttnFunction(Function):
         im2col_step,
     ):
         ctx.im2col_step = im2col_step
-        output = _C.ms_deform_attn_forward(
-            value,
-            value_spatial_shapes,
-            value_level_start_index,
-            sampling_locations,
-            attention_weights,
-            ctx.im2col_step,
-        )
+        if _C is not None:
+            output = _C.ms_deform_attn_forward(
+                value,
+                value_spatial_shapes,
+                value_level_start_index,
+                sampling_locations,
+                attention_weights,
+                ctx.im2col_step,
+            )
+        else:
+            output = ms_deform_attn_core_pytorch(
+                value, value_spatial_shapes, sampling_locations, attention_weights
+            )
         ctx.save_for_backward(
             value,
             value_spatial_shapes,
@@ -77,6 +83,8 @@ class MultiScaleDeformableAttnFunction(Function):
             sampling_locations,
             attention_weights,
         ) = ctx.saved_tensors
+        if _C is None:
+            return None, None, None, None, None, None
         grad_value, grad_sampling_loc, grad_attn_weight = _C.ms_deform_attn_backward(
             value,
             value_spatial_shapes,
@@ -327,8 +335,7 @@ class MultiScaleDeformableAttention(nn.Module):
                 )
             )
     
-        # if torch.cuda.is_available() and value.is_cuda:
-        if not torch.cuda.is_available() :
+        if torch.cuda.is_available() and value.is_cuda:
             halffloat = False
             if value.dtype == torch.float16:
                 halffloat = True

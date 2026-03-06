@@ -1,0 +1,282 @@
+# UltraEdit — Tổng Quan Chi Tiết Toàn Bộ Repository
+
+> **UltraEdit** là một dự án nghiên cứu về **instruction-based image editing** (chỉnh sửa ảnh dựa trên chỉ dẫn văn bản), với dataset ~4M mẫu tự động sinh ra. Paper: [arXiv:2407.05282](https://arxiv.org/abs/2407.05282)
+
+---
+
+## 📂 Cấu Trúc Thư Mục Tổng Quan
+
+```
+UltraEdit/
+├── app.py                          # Gradio demo UI
+├── example.py                      # Script inference mẫu
+├── requirements.txt                # Dependencies
+├── data_generation/                # 🔧 Pipeline tạo dataset
+│   ├── data_generation.py          # Script chính tạo dữ liệu (~1157 dòng)
+│   ├── prompt_to_prompt_pipeline.py# Pipeline P2P cho SDXL
+│   ├── sdxl_p2p_pipeline.py        # Pipeline P2P mở rộng (Text2Img, Img2Img, Inpaint)
+│   ├── processors.py               # Attention control processors
+│   ├── util.py                     # Utilities cho attention control (phiên bản SDXL)
+│   ├── run_sdxl_turbo_p2p_i2i_8gpu.sh  # Script chạy tạo data free-form
+│   ├── run_inpainting_multiiple_objects.sh # Script tạo data region-based
+│   ├── ldm/                        # Latent Diffusion Models components
+│   ├── metrics/                    # Metrics đánh giá (CLIP similarity, compute_metrics)
+│   └── Grounded-Segment-Anything/  # Sub-repo cho object detection & segmentation
+├── scripts/                        # 🚀 Shell scripts huấn luyện
+│   ├── run_sft_512_sd3_stage1.sh       # SD3 Stage 1: Free-form editing
+│   ├── run_sft_512_with_mask_sd3_stage2.sh # SD3 Stage 2: Mixed training
+│   ├── run_sft_512_sdxl_stage1.sh      # SDXL Stage 1: Free-form editing
+│   └── run_sft_512_sdxl_with_mask_stage2.sh # SDXL Stage 2: Mixed training
+├── traning/                        # 📚 Training scripts Python
+│   ├── train_sd3_pix2pix.py        # Training code cho SD3 (~1710 dòng)
+│   └── train_sdxl_pix2pix.py       # Training code cho SDXL (~1411 dòng)
+├── diffusers/                      # 🔀 Fork của HuggingFace Diffusers (customized)
+└── images/                         # 🖼️ Ảnh mẫu cho demo & validation
+```
+
+---
+
+## 1. Top-Level Files
+
+### [app.py](file:///home/nhan/Repo/UltraEdit/app.py) — Gradio Demo
+- Tải model `BleachNick/SD3_UltraEdit_w_mask` (Stable Diffusion 3 + UltraEdit)
+- Hàm [generate()](file:///home/nhan/Repo/UltraEdit/app.py#16-51): nhận ảnh + mask + prompt → trả về ảnh đã chỉnh sửa
+- **Free-form editing**: nếu không vẽ mask → dùng mask trắng
+- **Region-based editing**: nếu có mask → chỉnh sửa vùng được đánh dấu
+- UI cho phép điều chỉnh: `num_inference_steps`, `image_guidance_scale`, `guidance_scale`, `seed`
+- Bao gồm 5 examples minh họa với ảnh input/mask/merged
+
+### [example.py](file:///home/nhan/Repo/UltraEdit/example.py) — Script Inference Mẫu
+- Code tối giản để chạy inference với pipeline `StableDiffusion3InstructPix2PixPipeline`
+- Input: ảnh gốc + mask → output: ảnh đã chỉnh sửa
+- Prompt mẫu: *"What if the horse wears a hat?"*
+
+### [requirements.txt](file:///home/nhan/Repo/UltraEdit/requirements.txt) — Dependencies
+| Package | Mục đích |
+|---------|----------|
+| `accelerate` | Distributed training |
+| [clip](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#125-158) (OpenAI) | CLIP model cho data filtering |
+| `datasets` | HuggingFace datasets |
+| `torch 2.3.0+cu118` | PyTorch với CUDA 11.8 |
+| `transformers` | Text encoders (CLIP, T5) |
+| `xformers` | Memory-efficient attention |
+| `omegaconf` | Config management |
+
+---
+
+## 2. `data_generation/` — Pipeline Tạo Dataset
+
+Đây là phần cốt lõi cho việc **tự động sinh dữ liệu editing** từ ảnh thật.
+
+### [data_generation.py](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py) (~1157 dòng) — Script Chính
+
+**Workflow tổng quan:**
+1. Đọc dữ liệu từ JSONL (chứa URL ảnh + prompt gốc + prompt chỉnh sửa + editing instruction)
+2. Tải ảnh thật, resize về kích thước target (512px)
+3. Dùng **Prompt-to-Prompt (P2P)** để sinh ảnh chỉnh sửa từ ảnh gốc
+4. Lọc kết quả bằng **CLIP similarity**, **DINOv2 similarity**, **SSIM**
+5. Lưu kết quả chất lượng cao
+
+**Các hàm/class quan trọng:**
+
+| Hàm/Class | Chức năng |
+|-----------|----------|
+| [generate_images()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#194-260) | Chạy P2P pipeline để sinh ảnh edited |
+| [save_tsv()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#301-750) | Hàm chính xử lý 1 shard dữ liệu (~450 dòng) |
+| [detect()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#277-286) | Dùng Grounding DINO detect object |
+| [segment()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#287-300) | Dùng SAM tạo mask segmentation |
+| [create_mask_image()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#105-133) | Tạo mask từ bounding box |
+| [generate_Contours_mask()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#59-91) | Tạo mask từ contour detection |
+| [check_mask_size()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#96-104) | Kiểm tra mask hợp lệ (1%-90% diện tích ảnh) |
+| [OpenImageDataset](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#803-833) | Dataset loader cho ảnh OpenImages |
+| [RegionDataset](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#834-865) | Dataset loader cho region-based editing |
+| [NoneImageDataset](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#789-802) | Dataset placeholder |
+| [collate_fn()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#885-912) | Custom collate function |
+| [load_jsonl()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#930-936) / [load_json()](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#936-939) | Load data files |
+
+**Data filtering criteria:**
+- `clip-img-threshold`: CLIP image similarity (mặc định 0.75)
+- `clip-dir-threshold`: CLIP directional similarity (0.22)
+- `dinov2-sim-threshold`: DINOv2 similarity (0.4)
+- `max-ssim-threshold` / `max-dinov2-sim-threshold`: upper bounds để loại ảnh quá giống nhau
+
+### [processors.py](file:///home/nhan/Repo/UltraEdit/data_generation/processors.py) (~597 dòng) — Attention Controllers
+
+Triển khai kỹ thuật **Prompt-to-Prompt** bằng cách can thiệp vào cross-attention layers:
+
+| Class | Vai trò |
+|-------|---------|
+| [P2PCrossAttnProcessor](file:///home/nhan/Repo/UltraEdit/data_generation/util.py#11-46) | Custom attention processor — hook vào UNet để ghi nhận/thay thế attention maps |
+| [AttentionControl](file:///home/nhan/Repo/UltraEdit/data_generation/util.py#129-164) | Base class quản lý attention qua các bước denoising |
+| [EmptyControl](file:///home/nhan/Repo/UltraEdit/data_generation/processors.py#166-169) | Controller rỗng (pass-through) |
+| [AttentionStore](file:///home/nhan/Repo/UltraEdit/data_generation/util.py#171-206) | Lưu trữ attention maps qua các bước |
+| [LocalBlend](file:///home/nhan/Repo/UltraEdit/data_generation/processors.py#209-244) | Blend cục bộ — chỉ thay đổi vùng liên quan đến từ được sửa |
+| [AttentionControlEdit](file:///home/nhan/Repo/UltraEdit/data_generation/util.py#246-305) | Base cho attention editing (replace cross/self attention) |
+| `AttentionReplace` | **Thay thế** cross-attention maps (dùng cho word swap, vd: "cat" → "dog") |
+| `AttentionRefine` | **Tinh chỉnh** attention maps (dùng cho thêm/bớt chi tiết) |
+| `AttentionReweight` | **Điều chỉnh trọng số** attention (tăng/giảm ảnh hưởng của từ) |
+| [create_controller()](file:///home/nhan/Repo/UltraEdit/data_generation/util.py#48-127) | Factory function — tạo controller phù hợp dựa trên `cross_attention_kwargs` |
+
+### [prompt_to_prompt_pipeline.py](file:///home/nhan/Repo/UltraEdit/data_generation/prompt_to_prompt_pipeline.py) (~475 dòng)
+- Class [Prompt2PromptPipeline](file:///home/nhan/Repo/UltraEdit/data_generation/prompt_to_prompt_pipeline.py#21-475) kế thừa `StableDiffusionXLPipeline`
+- Tích hợp attention control vào quá trình denoising
+- Hỗ trợ **text-to-image** generation với P2P editing
+
+### [sdxl_p2p_pipeline.py](file:///home/nhan/Repo/UltraEdit/data_generation/sdxl_p2p_pipeline.py) (~1799 dòng)
+Phiên bản mở rộng hơn, gồm **3 pipeline classes**:
+1. [Prompt2PromptPipeline](file:///home/nhan/Repo/UltraEdit/data_generation/prompt_to_prompt_pipeline.py#21-475) — Text-to-Image P2P
+2. [Prompt2PromptImg2ImgPipeline](file:///home/nhan/Repo/UltraEdit/data_generation/sdxl_p2p_pipeline.py#529-1063) — **Image-to-Image P2P** (quan trọng nhất cho data gen)
+3. [Prompt2PromptInpaintPipeline](file:///home/nhan/Repo/UltraEdit/data_generation/sdxl_p2p_pipeline.py#1068-1799) — **Inpainting P2P** (cho region-based editing)
+
+### [util.py](file:///home/nhan/Repo/UltraEdit/data_generation/util.py) (~613 dòng)
+- Tương tự [processors.py](file:///home/nhan/Repo/UltraEdit/data_generation/processors.py) nhưng dùng cho SDXL pipelines
+- Thêm hỗ trợ `torch_dtype` parameter
+
+### Shell Scripts Tạo Dữ Liệu
+
+| Script | Mục đích |
+|--------|----------|
+| [run_sdxl_turbo_p2p_i2i_8gpu.sh](file:///home/nhan/Repo/UltraEdit/data_generation/run_sdxl_turbo_p2p_i2i_8gpu.sh) | Tạo data free-form bằng SDXL-Turbo P2P Image-to-Image, 8 GPU |
+| [run_inpainting_multiiple_objects.sh](file:///home/nhan/Repo/UltraEdit/data_generation/run_inpainting_multiiple_objects.sh) | Tạo data region-based bằng inpainting + GroundingDINO + SAM |
+
+### Sub-directories
+
+- **`ldm/`**: Chứa [autoencoder.py](file:///home/nhan/Repo/UltraEdit/data_generation/ldm/models/autoencoder.py) (VAE) và `models/diffusion/` — components của Latent Diffusion Model
+- **`metrics/`**: 
+  - [clip_similarity.py](file:///home/nhan/Repo/UltraEdit/data_generation/metrics/clip_similarity.py) — Tính CLIP image/text similarity
+  - [compute_metrics.py](file:///home/nhan/Repo/UltraEdit/data_generation/metrics/compute_metrics.py) — Tính các metrics đánh giá chất lượng editing
+- **`Grounded-Segment-Anything/`**: Sub-repo tích hợp **GroundingDINO** (open-vocabulary detection) + **SAM** (Segment Anything Model) để tự động tạo masks cho region-based editing
+
+---
+
+## 3. `traning/` — Training Scripts
+
+### [train_sd3_pix2pix.py](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py) (~1710 dòng) — Training cho Stable Diffusion 3
+
+**Kiến trúc:**
+- Model: `SD3Transformer2DModel` (DiT-based, không dùng UNet)
+- Text Encoders: **3 encoders** — CLIP-L, CLIP-G, T5-XXL
+- Pipeline: `StableDiffusion3InstructPix2PixPipeline`
+
+**Các hàm chính:**
+
+| Hàm | Chức năng |
+|-----|----------|
+| [load_text_encoders()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#64-75) | Load 3 text encoders |
+| [tokenize_prompt()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#77-87) | Tokenize prompt |
+| [_encode_prompt_with_t5()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#89-123) | Encode với T5 |
+| [_encode_prompt_with_clip()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#125-158) | Encode với CLIP |
+| [encode_prompt()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#160-219) | Kết hợp tất cả prompt embeddings |
+| [parse_args()](file:///home/nhan/Repo/UltraEdit/traning/train_sdxl_pix2pix.py#145-506) | ~400 dòng argument parsing |
+| [combine_rgb_and_mask_to_rgba()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#641-657) | Gộp RGB + mask thành RGBA |
+| [convert_to_np()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#659-676) | Convert ảnh sang numpy |
+| [main()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#697-1703) | Hàm training chính (~1000 dòng) |
+| `main.preprocess_images()` | Tiền xử lý ảnh (resize, crop, normalize) |
+| `main.preprocess_train()` | Chuẩn bị training samples |
+| `main.collate_fn()` | Batch collation |
+| `main.get_sigmas()` | Tính sigma cho flow matching |
+
+**Training flow trong [main()](file:///home/nhan/Repo/UltraEdit/traning/train_sd3_pix2pix.py#697-1703):**
+1. Load pretrained model + text encoders
+2. Freeze text encoders, chỉ train transformer
+3. Thêm extra input channels cho transformer (concatenate source image latents)
+4. Setup optimizer (AdamW), scheduler (cosine), mixed precision (fp16)
+5. Load dataset từ JSONL hoặc HuggingFace
+6. Training loop: encode source/edited images → add noise → predict → compute loss
+7. Validation mỗi N steps
+8. Save checkpoints
+
+**Flag `--do_mask`**: Khi bật, ảnh gốc được concatenate với mask (RGBA) thay vì chỉ RGB → cho phép region-based editing.
+
+### [train_sdxl_pix2pix.py](file:///home/nhan/Repo/UltraEdit/traning/train_sdxl_pix2pix.py) (~1411 dòng) — Training cho SDXL
+
+**Kiến trúc:**
+- Model: `UNet2DConditionModel` (truyền thống)
+- Text Encoders: **2 encoders** — CLIP-L, CLIP-G
+- Pipeline: `StableDiffusionXLInstructPix2PixPipeline`
+
+**Khác biệt so với SD3:**
+- Dùng UNet thay vì Transformer (DiT)
+- Chỉ 2 text encoders (không có T5)
+- Hỗ trợ EMA (Exponential Moving Average)
+- Hỗ trợ xformers memory efficient attention
+- Gradient checkpointing
+
+---
+
+## 4. `scripts/` — Shell Scripts Huấn Luyện
+
+### Training 2 giai đoạn:
+
+```mermaid
+graph LR
+    A[Pretrained SD3/SDXL] -->|Stage 1: Free-form| B[Model v1]
+    B -->|Stage 2: Mixed mask+free| C[Final Model]
+```
+
+| Script | Model | Stage | Dataset | LR | Epochs | Batch |
+|--------|-------|-------|---------|-----|--------|-------|
+| [SD3 Stage 1](file:///home/nhan/Repo/UltraEdit/scripts/run_sft_512_sd3_stage1.sh) | SD3 | 1 (free-form) | 4M JSONL | 5e-5 | 5 | 8×4 |
+| [SD3 Stage 2](file:///home/nhan/Repo/UltraEdit/scripts/run_sft_512_with_mask_sd3_stage2.sh) | SD3 Stage1 output | 2 (mixed) | 1M JSONL | 1e-5 | 2 | 8×4 |
+| [SDXL Stage 1](file:///home/nhan/Repo/UltraEdit/scripts/run_sft_512_sdxl_stage1.sh) | SDXL-base-1.0 | 1 (free-form) | 4M JSONL | 5e-5 | 2 | 18×2 |
+| [SDXL Stage 2](file:///home/nhan/Repo/UltraEdit/scripts/run_sft_512_sdxl_with_mask_stage2.sh) | SDXL Stage1 output | 2 (mixed) | 1M JSONL | 1e-5 | 2 | 18×2 |
+
+**Hyperparameters chung**: 8 GPUs, fp16, cosine LR scheduler, conditioning dropout 5%, WandB logging.
+
+---
+
+## 5. `diffusers/` — Fork HuggingFace Diffusers
+
+Đây là **bản fork** của thư viện [HuggingFace Diffusers](https://github.com/huggingface/diffusers) (~1384 files), được customize để hỗ trợ:
+
+- `StableDiffusion3InstructPix2PixPipeline` — Pipeline mới cho SD3 InstructPix2Pix
+- `StableDiffusionXLInstructPix2PixPipeline` — Pipeline cho SDXL InstructPix2Pix  
+- Custom `SD3Transformer2DModel` — Sửa transformer để nhận extra input channels (source image)
+
+Cài đặt bằng: `cd diffusers && pip install -e .` (editable mode).
+
+---
+
+## 6. [images/](file:///home/nhan/Repo/UltraEdit/data_generation/data_generation.py#194-260) — Ảnh Mẫu
+
+- [input.png](file:///home/nhan/Repo/UltraEdit/images/input.png) — Ảnh input mẫu (con ngựa)
+- [mask_img.png](file:///home/nhan/Repo/UltraEdit/images/mask_img.png) — Mask mẫu
+- [editing_result.png](file:///home/nhan/Repo/UltraEdit/images/editing_result.png) — Kết quả chỉnh sửa mẫu
+- `example_images/` — Nhiều ảnh ví dụ cho Gradio demo
+
+---
+
+## 🔄 Tổng Quan Workflow Toàn Bộ Dự Án
+
+```mermaid
+graph TD
+    subgraph "Phase 1: Data Generation"
+        A[Real Images + Captions] --> B[LLM sinh editing instructions]
+        B --> C[Prompt-to-Prompt Pipeline]
+        C --> D[SDXL-Turbo P2P Img2Img]
+        D --> E[Quality Filtering\nCLIP / DINOv2 / SSIM]
+        E --> F[4M editing samples]
+        
+        G[GroundingDINO + SAM] --> H[Auto Region Masks]
+        H --> I[Region-based editing data]
+    end
+
+    subgraph "Phase 2: Training"
+        F --> J[Stage 1: Free-form training]
+        J --> K[Intermediate model]
+        K --> L[Stage 2: Mixed training\nfree-form + region-based]
+        I --> L
+        L --> M[Final UltraEdit Model]
+    end
+
+    subgraph "Phase 3: Inference"
+        M --> N[Gradio Demo / API]
+        N --> O[User: image + prompt + optional mask]
+        O --> P[Edited image output]
+    end
+```
+
+### Tóm tắt:
+1. **Data Generation**: Dùng ảnh thật + LLM để tạo editing instructions, rồi dùng P2P với SDXL-Turbo để sinh cặp ảnh (gốc, edited). Lọc chất lượng bằng CLIP/DINOv2/SSIM.
+2. **Training**: 2 giai đoạn — Stage 1 (free-form editing) → Stage 2 (mixed free-form + region-based). Hỗ trợ cả SD3 và SDXL.
+3. **Inference**: Pipeline `InstructPix2Pix` nhận ảnh + prompt + mask tùy chọn → trả về ảnh đã chỉnh sửa.

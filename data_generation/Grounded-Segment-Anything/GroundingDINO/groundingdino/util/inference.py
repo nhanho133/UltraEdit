@@ -26,7 +26,7 @@ def preprocess_caption(caption: str) -> str:
     return result + "."
 
 
-def load_model(model_config_path: str, model_checkpoint_path: str, device: str = "cuda"):
+def load_model(model_config_path: str, model_checkpoint_path: str, device: str = "cpu"):
     args = SLConfig.fromfile(model_config_path)
     args.device = device
     model = build_model(args)
@@ -56,11 +56,11 @@ def predict(
         caption: str,
         box_threshold: float,
         text_threshold: float,
-        device: str = "cuda"
+        device: str = "cpu"
 ) -> Tuple[torch.Tensor, torch.Tensor, List[str]]:
     caption = preprocess_caption(caption=caption)
 
-    model = model.to(device)
+    pass  # already on device
     image = image.to(device)
 
     with torch.no_grad():
@@ -114,7 +114,7 @@ class Model:
         self,
         model_config_path: str,
         model_checkpoint_path: str,
-        device: str = "cuda"
+        device: str = "cpu"
     ):
         self.model = load_model(
             model_config_path=model_config_path,

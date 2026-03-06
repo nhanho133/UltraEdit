@@ -586,16 +586,19 @@ def get_aligned_sequences(x, y, trace_back):
 
 
 def get_mapper(x: str, y: str, tokenizer, max_len=77):
-    x_seq = tokenizer.encode(x)
-    y_seq = tokenizer.encode(y)
+    x_seq = tokenizer.encode(x)[:max_len]
+    y_seq = tokenizer.encode(y)[:max_len]
     score = ScoreParams(0, 1, -1)
     matrix, trace_back = global_align(x_seq, y_seq, score)
     mapper_base = get_aligned_sequences(x_seq, y_seq, trace_back)[-1]
+    
+    mb_len = min(mapper_base.shape[0], max_len)
     alphas = torch.ones(max_len)
-    alphas[: mapper_base.shape[0]] = mapper_base[:, 1].ne(-1).float()
+    alphas[:mb_len] = mapper_base[:mb_len, 1].ne(-1).float()
     mapper = torch.zeros(max_len, dtype=torch.int64)
-    mapper[: mapper_base.shape[0]] = mapper_base[:, 1]
-    mapper[mapper_base.shape[0] :] = len(y_seq) + torch.arange(max_len - len(y_seq))
+    mapper[:mb_len] = mapper_base[:mb_len, 1]
+    if mb_len < max_len:
+        mapper[mb_len:] = len(y_seq) + torch.arange(max_len - mb_len)
     return mapper, alphas
 
 
