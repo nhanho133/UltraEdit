@@ -882,8 +882,12 @@ class Prompt2PromptImg2ImgPipeline(StableDiffusionXLImg2ImgPipeline):
             attn_res = int(np.ceil(width / 32)), int(np.ceil(height / 32))
         self.attn_res = attn_res
         
+        p2p_prompts = prompt
+        if cross_attention_kwargs is not None and cross_attention_kwargs.get("prompts", None) is not None:
+            p2p_prompts = cross_attention_kwargs["prompts"]
+
         self.controller = create_controller(
-            prompt, cross_attention_kwargs, num_inference_steps, tokenizer=self.tokenizer, device=self.device, attn_res=self.attn_res
+            p2p_prompts, cross_attention_kwargs, num_inference_steps, tokenizer=self.tokenizer, device=self.device, attn_res=self.attn_res
         )
         self.register_attention_control(self.controller)  # add attention controller      
 
@@ -1542,8 +1546,12 @@ class Prompt2PromptInpaintPipeline(StableDiffusionXLInpaintPipeline):
             attn_res = int(np.ceil(width / 32)), int(np.ceil(height / 32))
         self.attn_res = attn_res
         
+        p2p_prompts = prompt
+        if cross_attention_kwargs is not None and cross_attention_kwargs.get("prompts", None) is not None:
+            p2p_prompts = cross_attention_kwargs["prompts"]
+
         self.controller = create_controller(
-            prompt, cross_attention_kwargs, num_inference_steps, tokenizer=self.tokenizer, device=self.device, attn_res=self.attn_res
+            p2p_prompts, cross_attention_kwargs, num_inference_steps, tokenizer=self.tokenizer, device=self.device, attn_res=self.attn_res
         )
         self.register_attention_control(self.controller)  # add attention controller      
 

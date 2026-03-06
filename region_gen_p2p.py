@@ -93,8 +93,22 @@ def build_longclip_embeddings(src_caption: str, tgt_caption: str,
         from huggingface_hub import hf_hub_download
         lc_path = hf_hub_download(
             repo_id="BeichenZhang/LongCLIP-L", filename="longclip-L.pt")
+        lc_path = os.path.realpath(lc_path)  # resolve symlink → blob path thực
         lc_model, _ = longclip.load(lc_path, device=device)
         lc_model.eval()
+
+        # Verify đây thực sự là Long-CLIP (context_length=248)
+        # Nếu load ra CLIP gốc (context_length=77) → file cache bị corrupt
+        if not hasattr(lc_model, 'encode_text_full'):
+            raise RuntimeError(
+                f"encode_text_full không có — model là CLIP gốc "
+                f"(context_length={lc_model.context_length}). "
+                f"Xóa cache: rm -rf ~/.cache/huggingface/hub/models--BeichenZhang*")
+        if lc_model.context_length < 200:
+            raise RuntimeError(
+                f"context_length={lc_model.context_length} — cần 248. "
+                f"Xóa cache: rm -rf ~/.cache/huggingface/hub/models--BeichenZhang*")
+
         print(f"    Long-CLIP OK  context_length={lc_model.context_length}")
     except Exception as e:
         print(f"    [FAIL] Long-CLIP: {e}")
@@ -108,7 +122,7 @@ def build_longclip_embeddings(src_caption: str, tgt_caption: str,
         "~/.cache/ultraedit/openclip_vitbigG14.pt")
     print("    [OpenCLIP] Loading ViT-bigG-14...")
     try:
-        import open_clip
+        from open_clip_long import factory as open_clip
         if os.path.exists(OPENCLIP_CACHE):
             print(f"    Loading from local cache: {OPENCLIP_CACHE}")
             bigG, _, _ = open_clip.create_model_and_transforms("ViT-bigG-14")
@@ -254,6 +268,7 @@ def build_cross_attention_kwargs(src: str, tgt: str, threshold: float) -> dict:
         "edit_type":       edit_type,
         "n_self_replace":  threshold,
         "n_cross_replace": n_cross,
+        "prompts":         [src, tgt],
     }
 
 
@@ -428,7 +443,7 @@ def main():
     if longclip_embeds is not None:
         # Bypass encode_prompt() — truyền embeddings trực tiếp
         # prompt=None bắt buộc khi dùng prompt_embeds
-        call_kwargs["prompt"]               = None
+        call_kwargs["prompt"] = None
         call_kwargs["prompt_embeds"]        = longclip_embeds["prompt_embeds"]
         call_kwargs["pooled_prompt_embeds"] = longclip_embeds["pooled_prompt_embeds"]
         print("  Token mode: Long-CLIP 248 tokens ✓")

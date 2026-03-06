@@ -266,7 +266,15 @@ class AttentionControlEdit(AttentionStore, abc.ABC):
             attn = attn.reshape(self.batch_size, h, *attn.shape[1:])
             attn_base, attn_replace = attn[0], attn[1:]
             if is_cross:
-                alpha_words = self.cross_replace_alpha[self.cur_step]
+                alpha_words = self.cross_replace_alpha[self.cur_step]  # (B-1, 1, 1, 77)
+                # Pad alpha_words if Long-CLIP embeds are wider than 77 tokens
+                seq_len = attn_replace.shape[-1]
+                if seq_len > alpha_words.shape[-1]:
+                    pad = torch.zeros(
+                        *alpha_words.shape[:-1], seq_len - alpha_words.shape[-1],
+                        device=alpha_words.device, dtype=alpha_words.dtype,
+                    )
+                    alpha_words = torch.cat([alpha_words, pad], dim=-1)
                 attn_replace_new = (
                     self.replace_cross_attention(attn_base, attn_replace) * alpha_words
                     + (1 - alpha_words) * attn_replace
@@ -331,8 +339,23 @@ class AttentionReplace(AttentionControlEdit):
 
 class AttentionRefine(AttentionControlEdit):
     def replace_cross_attention(self, attn_base, att_replace):
-        attn_base_replace = attn_base[:, :, self.mapper].permute(2, 0, 1, 3)
-        attn_replace = attn_base_replace * self.alphas + att_replace * (1 - self.alphas)
+        # self.mapper / self.alphas are built from 77-token tokenization.
+        # When Long-CLIP embeds are used, att_replace has 248 tokens.
+        # Strategy: blend only the aligned 77 positions; keep att_replace for the rest.
+        aligned_len = self.alphas.shape[-1]          # 77
+        seq_len     = att_replace.shape[-1]           # 77 or 248
+        attn_base_replace = attn_base[:, :, self.mapper].permute(2, 0, 1, 3)  # (B, H, P, 77)
+        attn_replace_aligned = (
+            attn_base_replace * self.alphas
+            + att_replace[..., :aligned_len] * (1 - self.alphas)
+        )  # (B, H, P, 77)
+        if seq_len > aligned_len:
+            # Extra tokens beyond aligned_len: keep target's own attention unchanged
+            attn_replace = torch.cat(
+                [attn_replace_aligned, att_replace[..., aligned_len:]], dim=-1
+            )  # (B, H, P, seq_len)
+        else:
+            attn_replace = attn_replace_aligned
         return attn_replace
 
     def __init__(
