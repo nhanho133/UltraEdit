@@ -64,8 +64,61 @@ logging.Logger.warning = _filtered_warning
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "diffusers", "src"))   # forked diffusers
 sys.path.insert(0, os.path.join(ROOT, "data_generation"))
+sys.path.insert(0, os.path.join(ROOT, "Long-CLIP"))          # Long-CLIP repo
 
 from sdxl_p2p_pipeline import Prompt2PromptInpaintPipeline
+
+
+# ── Custom Text Encoders Loader ──────────────────────────────────────────────
+def load_custom_encoders(longclip_path: str, bigG_path: str, device: str):
+    """
+    Load Long-CLIP (ViT-L) and OpenCLIP (ViT-bigG-14).
+    Both support 248 tokens context length.
+    """
+    import torch.nn as nn
+    from model import longclip
+    from open_clip_long import factory as open_clip
+
+    print(f"\n[Phase 0] Loading Custom Text Encoders...")
+    
+    # 1. Load Long-CLIP (for text_encoder 1)
+    print(f"  > Loading Long-CLIP (ViT-L) from: {longclip_path}")
+    vitl_model, _ = longclip.load(longclip_path, device=device)
+    vitl_model.eval()
+    vitL_encode_fn = vitl_model.encode_text_full
+    vitL_tokenize_fn = longclip.tokenize
+
+    # 2. Load OpenCLIP bigG (for text_encoder 2)
+    print(f"  > Loading OpenCLIP (ViT-bigG-14) from: {bigG_path} (LAION weights)")
+    bigG_model, _, _ = open_clip.create_model_and_transforms(
+        'ViT-bigG-14', pretrained=bigG_path
+    )
+    
+    # KPS pos-embedding interpolation (from encode_prompt.py)
+    positional_embedding_pre = bigG_model.positional_embedding       
+    length, dim = positional_embedding_pre.shape
+    keep_len = 20
+    new_pos = torch.zeros([4*length-3*keep_len, dim], dtype=positional_embedding_pre.dtype)
+    for i in range(keep_len):
+        new_pos[i] = positional_embedding_pre[i]
+    for i in range(length-1-keep_len):
+        new_pos[4*i + keep_len] = positional_embedding_pre[i + keep_len]
+        new_pos[4*i + 1 + keep_len] = 3*positional_embedding_pre[i + keep_len]/4 + 1*positional_embedding_pre[i+1+keep_len]/4
+        new_pos[4*i + 2+keep_len] = 2*positional_embedding_pre[i+keep_len]/4 + 2*positional_embedding_pre[i+1+keep_len]/4
+        new_pos[4*i + 3+keep_len] = 1*positional_embedding_pre[i+keep_len]/4 + 3*positional_embedding_pre[i+1+keep_len]/4
+
+    new_pos[4*length -3*keep_len - 4] = positional_embedding_pre[length-1] + 0*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
+    new_pos[4*length -3*keep_len - 3] = positional_embedding_pre[length-1] + 1*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
+    new_pos[4*length -3*keep_len - 2] = positional_embedding_pre[length-1] + 2*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
+    new_pos[4*length -3*keep_len - 1] = positional_embedding_pre[length-1] + 3*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
+    bigG_model.positional_embedding = nn.Parameter(new_pos)
+
+    bigG_model.eval().to(device)
+    bigG_encode_fn = bigG_model.encode_text_full
+    bigG_tokenize_fn = open_clip.get_tokenizer('ViT-bigG-14')
+
+    print("  > Custom encoders loaded OK (context_length=248)")
+    return vitL_encode_fn, vitL_tokenize_fn, bigG_encode_fn, bigG_tokenize_fn
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -89,14 +142,23 @@ def load_and_resize(image_path: str, target_size: int = 512) -> Image.Image:
 def safe_truncate_caption(text: str, tokenizer, max_tokens: int = 75) -> str:
     """
     Truncate caption bằng tokenizer thực — đếm tokens, không đếm words.
-    SDXL tokenizer max_length=77 (BOS + 75 content + EOS).
+    SDXL tokenizer: max_length=77 (BOS + 75 content + EOS).
+    Long-CLIP/OpenCLIP tokenizer: max_length=248 → max_tokens=246.
     """
-    tokens = tokenizer.encode(text)
-    if len(tokens) <= max_tokens:
+    # Custom tokenizers return tensor directly or have different API
+    if callable(tokenizer) and not hasattr(tokenizer, 'encode'):
+        return text   # Custom tokenizer handles length natively
+        
+    try:
+        tokens = tokenizer.encode(text)
+        if len(tokens) <= max_tokens:
+            return text
+        truncated = tokenizer.decode(tokens[:max_tokens], skip_special_tokens=True)
+        print(f"  [WARN] Caption truncated: {len(tokens)} → {max_tokens} tokens")
+        return truncated
+    except AttributeError:
+        # Fallback if tokenizer doesn't have encode/decode
         return text
-    truncated = tokenizer.decode(tokens[:max_tokens], skip_special_tokens=True)
-    print(f"  [WARN] Caption truncated: {len(tokens)} → {max_tokens} tokens")
-    return truncated
 
 
 def compare_prompts(p1: str, p2: str):
@@ -201,6 +263,12 @@ def main():
     parser.add_argument("--device", default="auto",
                         choices=["auto", "cpu", "cuda"])
     parser.add_argument("--pipeline_ckpt", default="stabilityai/sdxl-turbo")
+    
+    # ── Custom Text Encoders ──────────────────────────────────────────────────
+    parser.add_argument("--longclip_ckpt", default=None,
+                        help="Path to longclip-L.pt (Replaces text_encoder 1). Extends SDXL to 248 tokens.")
+    parser.add_argument("--bigg_ckpt", default=None,
+                        help="Path to OpenCLIP ViT-bigG-14 bin (Replaces text_encoder 2).")
     args = parser.parse_args()
 
     # ── Device ────────────────────────────────────────────────────────────────
@@ -210,11 +278,14 @@ def main():
         device = args.device
     dtype = torch.float16 if device == "cuda" else torch.float32
 
+    use_custom_encoders = args.longclip_ckpt and args.bigg_ckpt
+    
     print(f"\n{'='*60}")
     print(f"  UltraEdit Region-based Pipeline (Paper Eq. 3)")
     print(f"  Device: {device} | Dtype: {dtype}")
     print(f"  Steps: {args.steps} | Strength: {args.strength}")
     print(f"  Soft mask s: {args.soft_mask_value}")
+    print(f"  Encoders: {'Long-CLIP + open_clip_long (248 tokens)' if use_custom_encoders else 'Standard CLIP (77 tokens)'}")
     print(f"{'='*60}")
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -233,12 +304,21 @@ def main():
     print(f"  Pipeline loaded: {args.pipeline_ckpt}")
     print(f"  UNet channels: {pipe.unet.config.in_channels}")
 
+    # ── Load Custom Encoders (if paths provided) ────────────────────────────
+    vitL_enc, vitL_tok, bigG_enc, bigG_tok = None, None, None, None
+    if use_custom_encoders:
+        vitL_enc, vitL_tok, bigG_enc, bigG_tok = load_custom_encoders(
+            args.longclip_ckpt, args.bigg_ckpt, device
+        )
+
     # ═══════════════════════════════════════════════════════════════════════
     # PHASE 1: TEXT PROCESSING
     # ═══════════════════════════════════════════════════════════════════════
     print(f"\n[Phase 1] Text Processing...")
-    src_caption = safe_truncate_caption(args.source_caption, pipe.tokenizer)
-    tgt_caption = safe_truncate_caption(args.target_caption, pipe.tokenizer)
+    
+    check_tokenizer = vitL_tok if use_custom_encoders else pipe.tokenizer
+    src_caption = safe_truncate_caption(args.source_caption, check_tokenizer)
+    tgt_caption = safe_truncate_caption(args.target_caption, check_tokenizer)
     print(f"  Ts: \"{src_caption[:80]}{'...' if len(src_caption)>80 else ''}\"")
     print(f"  Tt: \"{tgt_caption[:80]}{'...' if len(tgt_caption)>80 else ''}\"")
 
@@ -296,6 +376,20 @@ def main():
     random.seed(args.seed)
     np.random.seed(args.seed)
 
+    # ── Monkey-patch Encoders ───────────────────────────────────────────────
+    old_te1, old_tok1 = None, None
+    old_te2, old_tok2 = None, None
+    
+    if use_custom_encoders and vitL_enc is not None:
+        old_te1, old_tok1 = pipe.text_encoder, pipe.tokenizer
+        old_te2, old_tok2 = pipe.text_encoder_2, pipe.tokenizer_2
+        
+        pipe.text_encoder = vitL_enc
+        pipe.tokenizer    = vitL_tok
+        pipe.text_encoder_2 = bigG_enc
+        pipe.tokenizer_2  = bigG_tok
+        print("  [Custom Encoders] Monkey-patched BOTH text encoders (248 tokens)")
+
     # THE CORRECT CALL — 3 separate mask arguments:
     #   mask_image = Mf  (fine-grained SAM mask)
     #   temp_mask  = Mb  (bounding box mask)         ← kwargs
@@ -314,6 +408,11 @@ def main():
     ).images
     # out[0] = reconstruction from source caption (Ts)
     # out[1] = edited image from target caption (Tt) + P2P + mask blend
+
+    # ── Restore Encoders ────────────────────────────────────────────────────
+    if old_te1 is not None:
+        pipe.text_encoder, pipe.tokenizer = old_te1, old_tok1
+        pipe.text_encoder_2, pipe.tokenizer_2 = old_te2, old_tok2
 
     # ═══════════════════════════════════════════════════════════════════════
     # PHASE 4: SAVE RESULTS
