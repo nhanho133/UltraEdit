@@ -62,6 +62,7 @@ logging.Logger.warning = _filtered_warning
 
 # ── Repo path ────────────────────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(ROOT, "diffusers", "src"))   # forked diffusers
 sys.path.insert(0, os.path.join(ROOT, "data_generation"))
 
 from sdxl_p2p_pipeline import Prompt2PromptInpaintPipeline
