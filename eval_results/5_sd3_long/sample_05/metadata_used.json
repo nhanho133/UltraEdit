@@ -1,0 +1,14 @@
+{
+  "experiment": "5_sd3_long",
+  "description": "SD3 UltraEdit, src_long + instruction (T5-XXL, up to 256t)",
+  "sd3_prompt_mode": "long_src+instruction",
+  "edit_prompt": "A view of two cumulus congestus clouds taken from an active runway of an airport. Light bands from the sun coming through the airplane's window are visible in the upper left frame. A plane facing the opposite direction is seen taxing the runaway. To the right of the plane, there is another plane parked. The first cumulus congestus cloud in the upper left frame has a huge piece of its lower section that is darker than the rest of it. Diagonally down right from the first cumulus congestus cloud, the second cloud is further away and doesn't have any dark sections. Towards the portion of the frame where the sky and airport meet, there is a cloud far in distance blending in with the haze of pollution. Add an airplane preparing to land near the closest cloud in the image.",
+  "prompt_token_est": 140,
+  "sd3_params": {
+    "steps": 28,
+    "guidance_scale": 7.0,
+    "image_guidance": 1.5
+  },
+  "seed": 42,
+  "elapsed_sec": 20.8
+}

@@ -1,0 +1,14 @@
+{
+  "experiment": "5_sd3_long",
+  "description": "SD3 UltraEdit, src_long + instruction (T5-XXL, up to 256t)",
+  "sd3_prompt_mode": "long_src+instruction",
+  "edit_prompt": "A distant view of two boats on a calm body of water with small ripples throughout. The two boats are in the bottom right quadrant of the image. There is a boat on the far right facing the right side of the image, to the left of that boat is a boat with a tall mast with no sail facing the left side of the image. There is a strip of land visible in the distance extending horizontally across the image with the silhouette of multiple bushes and foliage across the top. Beyond the strip of land is more water that is only barely visible slightly above the land as it extends into the distance. The sky begins directly above the water beyond the strip of land. There is a large cumulonimbus cloud on the left side of the image and a cirrus clouds spread throughout the rest of the sky. The sun is shining from the left side of the image onto the left side of the water and the clouds, it seems to be currently setting but is out of view. Add a large container ship on the water.",
+  "prompt_token_est": 191,
+  "sd3_params": {
+    "steps": 28,
+    "guidance_scale": 7.0,
+    "image_guidance": 1.5
+  },
+  "seed": 42,
+  "elapsed_sec": 21.2
+}

@@ -1,0 +1,19 @@
+{
+  "experiment": "2_longclip248",
+  "description": "SDXL-Turbo + Long-CLIP 248t, long captions",
+  "use_long_clip": true,
+  "caption_mode": "long",
+  "source_caption": "A view of two cumulus congestus clouds taken from an active runway of an airport. Light bands from the sun coming through the airplane's window are visible in the upper left frame. A plane facing the opposite direction is seen taxing the runaway. To the right of the plane, there is another plane parked. The first cumulus congestus cloud in the upper left frame has a huge piece of its lower section that is darker than the rest of it. Diagonally down right from the first cumulus congestus cloud, the second cloud is further away and doesn't have any dark sections. Towards the portion of the frame where the sky and airport meet, there is a cloud far in distance blending in with the haze of pollution.",
+  "target_caption": "A view of two cumulus congestus clouds taken from an active runway of an airport. Light bands from the sun coming through the airplane's window are visible in the upper left frame. A plane facing the opposite direction is seen taxiing on the runway. To the right of the plane, there is another plane parked. Near the closest cumulus congestus cloud in the upper portion of the sky, an airplane is visible preparing to land. The first cumulus congestus cloud in the upper left frame has a huge piece of its lower section that is darker than the rest of it. Diagonally down right from the first cumulus congestus cloud, the second cloud is further away and doesn't have any dark sections. Towards the portion of the frame where the sky and airport meet, there is a cloud far in the distance blending in with the haze of pollution.",
+  "source_token_est": 127,
+  "target_token_est": 149,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0
+  },
+  "seed": 42,
+  "elapsed_sec": 37.4
+}

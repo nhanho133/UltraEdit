@@ -45,7 +45,10 @@ from ..utils.torch_utils import is_compiled_module
 if is_transformers_available():
     import transformers
     from transformers import PreTrainedModel
-    from transformers.utils import FLAX_WEIGHTS_NAME as TRANSFORMERS_FLAX_WEIGHTS_NAME
+    try:
+        from transformers.utils import FLAX_WEIGHTS_NAME as TRANSFORMERS_FLAX_WEIGHTS_NAME
+    except ImportError:
+        TRANSFORMERS_FLAX_WEIGHTS_NAME = "flax_model.msgpack"  # removed in transformers>=4.44
     from transformers.utils import SAFE_WEIGHTS_NAME as TRANSFORMERS_SAFE_WEIGHTS_NAME
     from transformers.utils import WEIGHTS_NAME as TRANSFORMERS_WEIGHTS_NAME
 

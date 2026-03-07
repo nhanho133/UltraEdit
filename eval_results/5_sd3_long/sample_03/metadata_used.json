@@ -1,0 +1,14 @@
+{
+  "experiment": "5_sd3_long",
+  "description": "SD3 UltraEdit, src_long + instruction (T5-XXL, up to 256t)",
+  "sd3_prompt_mode": "long_src+instruction",
+  "edit_prompt": "A medium side view of a white GEM electric cart parked on the side of the road and orientated toward the right. A large grass meadow with a large tree is visible in the background. The large tree is casting a large shadow on the meadow of short green grass and is located at the middle right of the view. Trees line the background of the frame from left to right behind the meadow, and are partially cast in shadow. The front fender of the cart has \"GEM eL XD\" written in silver letters. The cart has white body panels and a steel truck bed. The top of the truck has an orange siren light on its roof, that isn't bright during the day. An orange colored shield shaped emblem is on the passenger door. The electric cart has a shiny metal cargo box or bed on the back. Add a goat standing in the cargo bed at the back of the vehicle.",
+  "prompt_token_est": 163,
+  "sd3_params": {
+    "steps": 28,
+    "guidance_scale": 7.0,
+    "image_guidance": 1.5
+  },
+  "seed": 42,
+  "elapsed_sec": 23.9
+}

@@ -1,0 +1,14 @@
+{
+  "experiment": "5_sd3_long",
+  "description": "SD3 UltraEdit, src_long + instruction (T5-XXL, up to 256t)",
+  "sd3_prompt_mode": "long_src+instruction",
+  "edit_prompt": "An outdoor medium view of a partially visible metal street pole that extends upward and downward out of view. At the top left portion of the view a white rectangular shaped sign is visible on the metal pole. The rectangular sign says \"LEFT / TURN / SIGNAL\", in black with a black rectangular border around the words. The white sign is orientated or facing toward the right, and the metal pole is placed in the middle left of the view. At the bottom right of the view is the back of a yellow painted street display sign. The back of the yellow square shaped display has a front view sticker of a light yellow colored skull on it. The skull sticker is missing a portion in the top right, above the right eye socket. In the background a partially visible red brick building is within view. The overall image is visible during the day time, with no bright rays of light shining onto the view. Change the word \"LEFT\" to \"RIGHT\".",
+  "prompt_token_est": 171,
+  "sd3_params": {
+    "steps": 28,
+    "guidance_scale": 7.0,
+    "image_guidance": 1.5
+  },
+  "seed": 42,
+  "elapsed_sec": 24.1
+}

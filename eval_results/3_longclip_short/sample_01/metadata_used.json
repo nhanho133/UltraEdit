@@ -1,0 +1,19 @@
+{
+  "experiment": "3_longclip_short",
+  "description": "SDXL-Turbo + Long-CLIP 248t, short captions (ablation: same encoder, short text)",
+  "use_long_clip": true,
+  "caption_mode": "short",
+  "source_caption": "A concrete overpass with bold white graffiti letters reading \"CHINA\" in the center, with \"28TH\" to the left. A traffic light is visible on a pole in the lower left. Blue sky in the background.",
+  "target_caption": "A concrete overpass with bold white graffiti letters reading \"USA\" in the center, with \"28TH\" to the left. A traffic light is visible on a pole in the lower left. Blue sky in the background.",
+  "source_token_est": 35,
+  "target_token_est": 35,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0
+  },
+  "seed": 42,
+  "elapsed_sec": 37.2
+}

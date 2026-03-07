@@ -168,8 +168,16 @@ def build_longclip_embeddings(src_caption: str, tgt_caption: str,
     # ── Encode function ───────────────────────────────────────────────────────
     def encode(caption: str):
         with torch.no_grad():
-            # Encoder 1: Long-CLIP → (1, seq1, 768)
-            lc_tok = longclip.tokenize([caption]).to(device)
+            # Safe Long-CLIP tokenize — truncate to context_length-2 (BOS+EOS)
+            _lc_ctx = lc_model.context_length  # 248
+            _sot = longclip._tokenizer.encoder["<|startoftext|>"]
+            _eot = longclip._tokenizer.encoder["<|endoftext|>"]
+            _raw = longclip._tokenizer.encode(caption)
+            _raw = _raw[:_lc_ctx - 2]  # truncate content tokens
+            _toks = torch.zeros(1, _lc_ctx, dtype=torch.long)
+            _seq  = [_sot] + _raw + [_eot]
+            _toks[0, :len(_seq)] = torch.tensor(_seq)
+            lc_tok = _toks.to(device)
             emb1   = lc_model.encode_text_full(lc_tok).to(dtype)
 
             # Encoder 2: OpenCLIP → (1, seq2, 1280) + pooled EOS (1, 1280)

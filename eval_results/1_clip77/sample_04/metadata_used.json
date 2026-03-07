@@ -1,0 +1,19 @@
+{
+  "experiment": "1_clip77",
+  "description": "SDXL-Turbo + CLIP 77t, long captions (77-token truncation baseline)",
+  "use_long_clip": false,
+  "caption_mode": "long",
+  "source_caption": "A distant view of two boats on a calm body of water with small ripples throughout. The two boats are in the bottom right quadrant of the image. There is a boat on the far right facing the right side of the image, to the left of that boat is a boat with a tall mast with no sail facing the left side of the image. There is a strip of land visible in the distance extending horizontally across the image with the silhouette of multiple bushes and foliage across the top. Beyond the strip of land is more water that is only barely visible slightly above the land as it extends into the distance. The sky begins directly above the water beyond the strip of land. There is a large cumulonimbus cloud on the left side of the image and a cirrus clouds spread throughout the rest of the sky. The sun is shining from the left side of the image onto the left side of the water and the clouds, it seems to be currently setting but is out of view.",
+  "target_caption": "A distant view of three boats and a large container ship on a calm body of water with small ripples throughout. The two smaller boats are in the bottom right quadrant of the image. There is a boat on the far right facing the right side of the image, and to the left of that boat is a boat with a tall mast with no sail facing the left side of the image. A large container ship is visible farther out on the water in the distance. There is a strip of land visible in the distance extending horizontally across the image with the silhouette of multiple bushes and foliage across the top. Beyond the strip of land is more water that is only barely visible slightly above the land as it extends into the distance. The sky begins directly above the water beyond the strip of land. There is a large cumulonimbus cloud on the left side of the image and cirrus clouds spread throughout the rest of the sky. The sun is shining from the left side of the image onto the left side of the water and the clouds, and it appears to be setting but is out of view.",
+  "source_token_est": 183,
+  "target_token_est": 203,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0
+  },
+  "seed": 42,
+  "elapsed_sec": 9.6
+}

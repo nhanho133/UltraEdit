@@ -1,0 +1,19 @@
+{
+  "experiment": "3_longclip_short",
+  "description": "SDXL-Turbo + Long-CLIP 248t, short captions (ablation: same encoder, short text)",
+  "use_long_clip": true,
+  "caption_mode": "short",
+  "source_caption": "Two boats on a calm body of water at sunset. One boat faces right and the other has a tall mast facing left. A strip of land with bushes is visible in the distance. Cumulonimbus cloud on the left and cirrus clouds across the sky.",
+  "target_caption": "Two boats and a large container ship on a calm body of water at sunset. One small boat faces right, the other has a tall mast facing left. A strip of land with bushes is visible in the distance. Cumulonimbus cloud on the left and cirrus clouds across the sky.",
+  "source_token_est": 45,
+  "target_token_est": 50,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0
+  },
+  "seed": 42,
+  "elapsed_sec": 42.4
+}

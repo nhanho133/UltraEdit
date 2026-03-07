@@ -1,0 +1,19 @@
+{
+  "experiment": "3_longclip_short",
+  "description": "SDXL-Turbo + Long-CLIP 248t, short captions (ablation: same encoder, short text)",
+  "use_long_clip": true,
+  "caption_mode": "short",
+  "source_caption": "A metal street pole with a white sign reading \"LEFT / TURN / SIGNAL\" in black. A yellow sign with a skull sticker is visible at the bottom right. A red brick building is in the background. Daytime.",
+  "target_caption": "A metal street pole with a white sign reading \"RIGHT / TURN / SIGNAL\" in black. A yellow sign with a skull sticker is visible at the bottom right. A red brick building is in the background. Daytime.",
+  "source_token_est": 38,
+  "target_token_est": 38,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0
+  },
+  "seed": 42,
+  "elapsed_sec": 42.3
+}

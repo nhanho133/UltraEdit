@@ -54,31 +54,32 @@ def create_controller(
     equalizer_strengths = cross_attention_kwargs.get("equalizer_strengths", None)
     n_cross_replace = cross_attention_kwargs.get("n_cross_replace", 0.4)
     n_self_replace = cross_attention_kwargs.get("n_self_replace", 0.4)
+    max_num_words  = cross_attention_kwargs.get("max_num_words", 77)
 
     # only replace
     if edit_type == "replace" and local_blend_words is None:
         return AttentionReplace(
-            prompts, num_inference_steps, n_cross_replace, n_self_replace, tokenizer=tokenizer, device=device, attn_res=attn_res,torch_dtype=torch_dtype
+            prompts, num_inference_steps, n_cross_replace, n_self_replace, tokenizer=tokenizer, device=device, attn_res=attn_res, torch_dtype=torch_dtype, max_num_words=max_num_words
         )
 
     # replace + localblend
     if edit_type == "replace" and local_blend_words is not None:
         lb = LocalBlend(prompts, local_blend_words, tokenizer=tokenizer, device=device, attn_res=attn_res)
         return AttentionReplace(
-            prompts, num_inference_steps, n_cross_replace, n_self_replace, lb, tokenizer=tokenizer, device=device, attn_res=attn_res,torch_dtype=torch_dtype
+            prompts, num_inference_steps, n_cross_replace, n_self_replace, lb, tokenizer=tokenizer, device=device, attn_res=attn_res, torch_dtype=torch_dtype, max_num_words=max_num_words
         )
 
     # only refine
     if edit_type == "refine" and local_blend_words is None:
         return AttentionRefine(
-            prompts, num_inference_steps, n_cross_replace, n_self_replace, tokenizer=tokenizer, device=device, attn_res=attn_res
+            prompts, num_inference_steps, n_cross_replace, n_self_replace, tokenizer=tokenizer, device=device, attn_res=attn_res, max_num_words=max_num_words
         )
 
     # refine + localblend
     if edit_type == "refine" and local_blend_words is not None:
         lb = LocalBlend(prompts, local_blend_words, tokenizer=tokenizer, device=device, attn_res=attn_res)
         return AttentionRefine(
-            prompts, num_inference_steps, n_cross_replace, n_self_replace, lb, tokenizer=tokenizer, device=device, attn_res=attn_res
+            prompts, num_inference_steps, n_cross_replace, n_self_replace, lb, tokenizer=tokenizer, device=device, attn_res=attn_res, max_num_words=max_num_words
         )
 
     # only reweight
@@ -295,6 +296,7 @@ class AttentionControlEdit(AttentionStore, abc.ABC):
         tokenizer,
         device,
         attn_res=None,
+        max_num_words=77,
     ):
         super(AttentionControlEdit, self).__init__(attn_res=attn_res)
         # add tokenizer and device here
@@ -304,7 +306,7 @@ class AttentionControlEdit(AttentionStore, abc.ABC):
 
         self.batch_size = len(prompts)
         self.cross_replace_alpha = get_time_words_attention_alpha(
-            prompts, num_steps, cross_replace_steps, self.tokenizer
+            prompts, num_steps, cross_replace_steps, self.tokenizer, max_num_words=max_num_words
         ).to(self.device)
         if isinstance(self_replace_steps, float):
             self_replace_steps = 0, self_replace_steps
@@ -329,12 +331,13 @@ class AttentionReplace(AttentionControlEdit):
         tokenizer=None,
         device=None,
         attn_res=None,
-        torch_dtype=torch.float32
+        torch_dtype=torch.float32,
+        max_num_words=77,
     ):
         super(AttentionReplace, self).__init__(
-            prompts, num_steps, cross_replace_steps, self_replace_steps, local_blend, tokenizer, device, attn_res
+            prompts, num_steps, cross_replace_steps, self_replace_steps, local_blend, tokenizer, device, attn_res, max_num_words=max_num_words
         )
-        self.mapper = get_replacement_mapper(prompts, self.tokenizer,torch_dtype=torch_dtype).to(self.device)
+        self.mapper = get_replacement_mapper(prompts, self.tokenizer, max_len=max_num_words, torch_dtype=torch_dtype).to(self.device)
 
 
 class AttentionRefine(AttentionControlEdit):
@@ -367,12 +370,13 @@ class AttentionRefine(AttentionControlEdit):
         local_blend: Optional[LocalBlend] = None,
         tokenizer=None,
         device=None,
-        attn_res=None
+        attn_res=None,
+        max_num_words=77,
     ):
         super(AttentionRefine, self).__init__(
-            prompts, num_steps, cross_replace_steps, self_replace_steps, local_blend, tokenizer, device, attn_res
+            prompts, num_steps, cross_replace_steps, self_replace_steps, local_blend, tokenizer, device, attn_res, max_num_words=max_num_words
         )
-        self.mapper, alphas = get_refinement_mapper(prompts, self.tokenizer)
+        self.mapper, alphas = get_refinement_mapper(prompts, self.tokenizer, max_len=max_num_words)
         self.mapper, alphas = self.mapper.to(self.device), alphas.to(self.device)
         self.alphas = alphas.reshape(alphas.shape[0], 1, 1, alphas.shape[1])
 
@@ -448,7 +452,13 @@ def get_word_inds(text: str, word_place: int, tokenizer):
         word_place = [word_place]
     out = []
     if len(word_place) > 0:
+        # Temporarily raise model_max_length to suppress >77-token warning from CLIP tokenizer
+        _orig_max = getattr(tokenizer, 'model_max_length', None)
+        if _orig_max is not None:
+            tokenizer.model_max_length = int(1e9)
         words_encode = [tokenizer.decode([item]).strip("#") for item in tokenizer.encode(text)][1:-1]
+        if _orig_max is not None:
+            tokenizer.model_max_length = _orig_max
         cur_len, ptr = 0, 0
 
         for i in range(len(words_encode)):

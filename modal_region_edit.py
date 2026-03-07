@@ -237,7 +237,16 @@ def _build_longclip_embeddings(src_caption, tgt_caption, device, dtype):
 
     def encode(caption):
         with torch.no_grad():
-            lc_tok = longclip.tokenize([caption]).to(device)
+            # Safe Long-CLIP tokenize — truncate to context_length-2 (BOS+EOS)
+            _lc_ctx = lc_model.context_length  # 248
+            _sot = longclip._tokenizer.encoder["<|startoftext|>"]
+            _eot = longclip._tokenizer.encoder["<|endoftext|>"]
+            _raw = longclip._tokenizer.encode(caption)
+            _raw = _raw[:_lc_ctx - 2]  # truncate content tokens
+            _toks = torch.zeros(1, _lc_ctx, dtype=torch.long)
+            _seq  = [_sot] + _raw + [_eot]
+            _toks[0, :len(_seq)] = torch.tensor(_seq)
+            lc_tok = _toks.to(device)
             emb1   = lc_model.encode_text_full(lc_tok).to(dtype)
 
             bg_tok = bigG_tok([caption]).to(device)
@@ -286,8 +295,8 @@ def run_region_edit(
     # Params
     soft_mask_value: float = 0.5,
     p2p_threshold:   float = 0.7,
-    steps:           int   = 4,
-    strength:        float = 0.8,
+    steps:           int   = 6,
+    strength:        float = 0.5,
     guidance_scale:  float = 0.0,
     seed:            int   = 42,
     use_long_clip:   bool  = False,
@@ -405,6 +414,7 @@ def run_region_edit(
         "n_self_replace":  p2p_threshold,
         "n_cross_replace": n_cross,
         "prompts":         [src_cap, tgt_cap],
+        "max_num_words":   248 if longclip_embeds is not None else 77,
     }
 
     # ── Generate ───────────────────────────────────────────────────────────────
@@ -459,8 +469,8 @@ def main(
     target_caption: str  = "blue monster face graffiti on brick wall behind fence",
     soft_mask_value: float = 0.5,
     p2p_threshold:  float = 0.7,
-    steps:          int   = 4,
-    strength:       float = 0.8,
+    steps:          int   = 6,
+    strength:       float = 0.5,
     seed:           int   = 42,
     use_long_clip:  bool  = False,
     output_dir:     str   = "modal_output",
