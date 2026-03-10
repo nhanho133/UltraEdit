@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh01",
+  "finehard_id": "19_139827_0_0",
+  "image_filename": "",
+  "grounding_query": "a delicate wispy pattern",
+  "instruction": "Change \"a delicate wispy pattern\" to \"a rich plaid pattern\".",
+  "edit_region": "a delicate wispy pattern",
+  "source_caption_short": "a delicate wispy pattern that seems to emanate from the central mass and extend outward giving the impression of movement or diffusion",
+  "source_caption_long": "a delicate wispy pattern that seems to emanate from the central mass and extend outward giving the impression of movement or diffusion",
+  "target_caption_short": "a rich plaid pattern",
+  "target_caption_long": "a rich plaid pattern that seems to emanate from the central mass and extend outward giving the impression of movement or diffusion",
+  "bbox_norm": [
+    0.693572,
+    0.210735,
+    1.0,
+    0.700837
+  ],
+  "bbox_norm_original": [
+    0.608434,
+    0.210735,
+    0.868705,
+    0.700837
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_19/00013/000139827.jpg"
+}

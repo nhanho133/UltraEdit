@@ -1,0 +1,14 @@
+{
+  "experiment": "5_sd3_short",
+  "description": "SD3 UltraEdit, short instruction only",
+  "sd3_prompt_mode": "instruction",
+  "edit_prompt": "Change the word \"CHINA\" to \"USA\".",
+  "prompt_token_est": 6,
+  "sd3_params": {
+    "steps": 28,
+    "guidance_scale": 7.0,
+    "image_guidance": 1.5
+  },
+  "seed": 42,
+  "elapsed_sec": 35.4
+}

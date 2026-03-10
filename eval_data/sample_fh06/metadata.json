@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh06",
+  "finehard_id": "7_116915_0_0",
+  "image_filename": "",
+  "grounding_query": "a white surgical mask",
+  "instruction": "Change \"a white surgical mask\" to \"a red surgical mask\".",
+  "edit_region": "a white surgical mask",
+  "source_caption_short": "a white surgical mask indicative of a medical professional perhaps a nurse or a doctor with a stethoscope around their neck",
+  "source_caption_long": "a white surgical mask indicative of a medical professional perhaps a nurse or a doctor with a stethoscope around their neck",
+  "target_caption_short": "a red surgical mask",
+  "target_caption_long": "a red surgical mask indicative of a medical professional perhaps a nurse or a doctor with a stethoscope around their neck",
+  "bbox_norm": [
+    0.254779,
+    0.371637,
+    0.509925,
+    0.537668
+  ],
+  "bbox_norm_original": [
+    0.33652,
+    0.371637,
+    0.506617,
+    0.537668
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_7/00011/000116915.jpg"
+}

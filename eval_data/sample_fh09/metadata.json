@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh09",
+  "finehard_id": "20_219055_1_0",
+  "image_filename": "",
+  "grounding_query": "a sleeveless yellow top",
+  "instruction": "Change \"a sleeveless yellow top\" to \"a sleeveless orange top\".",
+  "edit_region": "a sleeveless yellow top",
+  "source_caption_short": "a sleeveless yellow top and a long-sleeve yellow skirt indicative of a comfortable and casual attire suitable for a medical visit",
+  "source_caption_long": "a sleeveless yellow top and a long-sleeve yellow skirt indicative of a comfortable and casual attire suitable for a medical visit",
+  "target_caption_short": "a sleeveless orange top",
+  "target_caption_long": "a sleeveless orange top and a long-sleeve yellow skirt indicative of a comfortable and casual attire suitable for a medical visit",
+  "bbox_norm": [
+    0.295132,
+    0.459154,
+    0.992789,
+    0.925517
+  ],
+  "bbox_norm_original": [
+    0.363421,
+    0.459154,
+    0.828526,
+    0.925517
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_20/00021/000219055.jpg"
+}

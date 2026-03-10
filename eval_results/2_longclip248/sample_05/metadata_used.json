@@ -12,8 +12,9 @@
     "p2p_threshold": 0.7,
     "steps": 6,
     "strength": 0.5,
-    "guidance_scale": 0.0
+    "guidance_scale": 0.0,
+    "mask_choice": "wo_final_layer"
   },
   "seed": 42,
-  "elapsed_sec": 37.4
+  "elapsed_sec": 34.1
 }

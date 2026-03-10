@@ -1,0 +1,21 @@
+{
+  "sample_id": "sample_ue",
+  "image_filename": "",
+  "use_local_image": true,
+  "edit_region": "Tall tree",
+  "instruction": "Turn the tall tree into a colourful rainbow tree.",
+  "source_caption_long": "In the image, two giraffes are prominently featured in a natural savannah setting. The main subjects are standing close to each other near a tree trunk, with one giraffe bending its neck down towards the other, possibly engaging in a social interaction or feeding behavior. Both giraffes exhibit their characteristic long necks and distinctive spotted coats, which provide excellent camouflage against the grassy background.\n\nThe setting is an expansive savannah landscape with rolling hills covered in dry, golden grass. In the distance, there are scattered trees and shrubs that add depth to the scene. The lighting appears to be bright and natural, suggesting it might be midday when the sun casts clear shadows on the ground. The spatial relationship between the giraffes and the tree suggests they are exploring or foraging around this particular area of the savannah. The overall color palette consists of earthy tones such as browns, greens, and yellows, creating a harmonious and serene atmosphere typical of African wildlife habitats.",
+  "source_caption_short": "Two giraffes are next to a tall tree.",
+  "target_caption_long": "In the image, two giraffes are prominently featured in a natural savannah setting. The main subjects are standing close to each other near a colourful rainbow tree trunk, with one giraffe bending its neck down towards the other, possibly engaging in a social interaction or feeding behavior. Both giraffes exhibit their characteristic long necks and distinctive spotted coats, which provide excellent camouflage against the grassy background.\n\nThe setting is an expansive savannah landscape with rolling hills covered in dry, golden grass. In the distance, there are scattered trees and shrubs that add depth to the scene. The lighting appears to be bright and natural, suggesting it might be midday when the sun casts clear shadows on the ground. The spatial relationship between the giraffes and the rainbow tree suggests they are exploring or foraging around this particular area of the savannah. The overall color palette consists of earthy tones such as browns, greens, and yellows, creating a harmonious and serene atmosphere typical of African wildlife habitats.",
+  "target_caption_short": "Two giraffes are next to a colourful rainbow tree.",
+  "grounding_query": "Tall tree",
+  "dataset_idx": 35,
+  "dataset_clip_dir": 0.41130632162094116,
+  "dataset_dinov2": 0.9986343383789062,
+  "caption_meta": {
+    "model": "OpenGVLab/InternVL2-8B",
+    "similarity": 0.984,
+    "source_words": 163,
+    "target_words": 166
+  }
+}

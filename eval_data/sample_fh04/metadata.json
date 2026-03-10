@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh04",
+  "finehard_id": "9_132444_0_0",
+  "image_filename": "",
+  "grounding_query": "a dark slate background",
+  "instruction": "Change \"a dark slate background\" to \"a bright blue background, a red background, a light gray background, a pale yellow background, a copper background, a grass green background, a beige background, a dark brown background, a deep purple background, a pastel pink background\".",
+  "edit_region": "a dark slate background",
+  "source_caption_short": "a dark slate background which has noticeable scratches and scuff marks giving the image a rustic and somewhat worn appearance",
+  "source_caption_long": "a dark slate background which has noticeable scratches and scuff marks giving the image a rustic and somewhat worn appearance",
+  "target_caption_short": "a bright blue background, a red background, a light gray background, a pale yellow background, a copper background, a grass green background, a beige background, a dark brown background, a deep purple background, a pastel pink background",
+  "target_caption_long": "a bright blue background, a red background, a light gray background, a pale yellow background, a copper background, a grass green background, a beige background, a dark brown background, a deep purple background, a pastel pink background which has noticeable scratches and scuff marks giving the image a rustic and somewhat worn appearance",
+  "bbox_norm": [
+    0.007166,
+    0.0,
+    0.992141,
+    1.0
+  ],
+  "bbox_norm_original": [
+    0.007166,
+    0.0,
+    0.992141,
+    0.998632
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_9/00013/000132444.jpg"
+}

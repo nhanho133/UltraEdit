@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh02",
+  "finehard_id": "8_114011_2_0",
+  "image_filename": "",
+  "grounding_query": "a low wooden table",
+  "instruction": "Change \"a low wooden table\" to \"a copper table\".",
+  "edit_region": "a low wooden table",
+  "source_caption_short": "a low wooden table with a carved design and a vase filled with flowers which includes what appears to be red geraniums white daisies and others",
+  "source_caption_long": "a low wooden table with a carved design and a vase filled with flowers which includes what appears to be red geraniums white daisies and others",
+  "target_caption_short": "a copper table",
+  "target_caption_long": "a copper table with a carved design and a vase filled with flowers which includes what appears to be red geraniums white daisies and others",
+  "bbox_norm": [
+    0.0,
+    0.648863,
+    0.402469,
+    0.990107
+  ],
+  "bbox_norm_original": [
+    2e-06,
+    0.648863,
+    0.44584,
+    0.990107
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_8/00011/000114011.jpg"
+}

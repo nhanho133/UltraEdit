@@ -1,0 +1,20 @@
+{
+  "experiment": "3_longclip_short",
+  "description": "SDXL-Turbo + Long-CLIP 248t, short captions (ablation: same encoder, short text)",
+  "use_long_clip": true,
+  "caption_mode": "short",
+  "source_caption": "Two giraffes are next to a tall tree.",
+  "target_caption": "Two giraffes are next to a colourful rainbow tree.",
+  "source_token_est": 8,
+  "target_token_est": 9,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0,
+    "mask_choice": "wo_final_layer"
+  },
+  "seed": 42,
+  "elapsed_sec": 37.8
+}

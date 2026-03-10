@@ -1,15 +1,11 @@
 {
   "sample_id": "sample_01",
   "image_filename": "1.png",
-  "edit_region": "graffiti text CHINA on concrete overpass",
-
+  "edit_region": "C H I N A",
+  "grounding_query": "text C H I N A",
   "instruction": "Change the word \"CHINA\" to \"USA\".",
-
   "source_caption_long": "An outdoor zoomed in upwards angled shot of the side of a concrete overpass with various graffiti writing, most prominently the bold white letters that read, \"CHINA\" in the center. Each letter of the word \"CHINA\" is in its own inlaid rectangle of the concrete overpass design. Bold white characters, \"28TH\" are visible in the rectangle immediately to the left. A traffic light is visible on the extended pole in the lower left corner. The visible sky in the background above and below the overpass is clear and light blue. Daytime.",
-
   "source_caption_short": "A concrete overpass with bold white graffiti letters reading \"CHINA\" in the center, with \"28TH\" to the left. A traffic light is visible on a pole in the lower left. Blue sky in the background.",
-
-  "target_caption_long": "An outdoor zoomed-in upward-angled shot of the side of a concrete overpass with various graffiti writing, most prominently the bold white letters that read \"USA\" in the center. Each letter of the word \"USA\" appears within the inlaid rectangles of the concrete overpass design. Bold white characters \"28TH\" are visible in the rectangle immediately to the left. A traffic light is visible on the extended pole in the lower left corner. The visible sky in the background above and below the overpass is clear and light blue. Daytime.",
-
+  "target_caption_long": "red colored graffiti letters reading \"USA\" in the center, with \"28TH\" to the left. A traffic light is visible on a pole in the lower left. Blue sky in the background.",
   "target_caption_short": "A concrete overpass with bold white graffiti letters reading \"USA\" in the center, with \"28TH\" to the left. A traffic light is visible on a pole in the lower left. Blue sky in the background."
 }

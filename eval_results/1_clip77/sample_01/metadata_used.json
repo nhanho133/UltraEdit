@@ -4,16 +4,17 @@
   "use_long_clip": false,
   "caption_mode": "long",
   "source_caption": "An outdoor zoomed in upwards angled shot of the side of a concrete overpass with various graffiti writing, most prominently the bold white letters that read, \"CHINA\" in the center. Each letter of the word \"CHINA\" is in its own inlaid rectangle of the concrete overpass design. Bold white characters, \"28TH\" are visible in the rectangle immediately to the left. A traffic light is visible on the extended pole in the lower left corner. The visible sky in the background above and below the overpass is clear and light blue. Daytime.",
-  "target_caption": "An outdoor zoomed-in upward-angled shot of the side of a concrete overpass with various graffiti writing, most prominently the bold white letters that read \"USA\" in the center. Each letter of the word \"USA\" appears within the inlaid rectangles of the concrete overpass design. Bold white characters \"28TH\" are visible in the rectangle immediately to the left. A traffic light is visible on the extended pole in the lower left corner. The visible sky in the background above and below the overpass is clear and light blue. Daytime.",
+  "target_caption": "An outdoor zoomed in upwards angled shot of the side of a concrete overpass with various graffiti writing, most prominently the bold white letters that read, \"USA\" in the center. Each letter of the word \"USA\" is in its own inlaid rectangle of the concrete overpass design. Bold white characters, \"28TH\" are visible in the rectangle immediately to the left. A traffic light is visible on the extended pole in the lower left corner. The visible sky in the background above and below the overpass is clear and light blue. Daytime.",
   "source_token_est": 91,
-  "target_token_est": 88,
+  "target_token_est": 91,
   "sdxl_params": {
     "soft_mask_value": 0.5,
     "p2p_threshold": 0.7,
     "steps": 6,
     "strength": 0.5,
-    "guidance_scale": 0.0
+    "guidance_scale": 0.0,
+    "mask_choice": "wo_final_layer"
   },
   "seed": 42,
-  "elapsed_sec": 18.8
+  "elapsed_sec": 8.9
 }

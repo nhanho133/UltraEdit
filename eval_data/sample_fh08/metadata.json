@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh08",
+  "finehard_id": "18_75427_1_0",
+  "image_filename": "",
+  "grounding_query": "a clear plastic container",
+  "instruction": "Change \"a clear plastic container\" to \"A frosted glass container\".",
+  "edit_region": "a clear plastic container",
+  "source_caption_short": "a clear plastic container filled with a single large black object that resembles a piece of fabric or leather",
+  "source_caption_long": "a clear plastic container filled with a single large black object that resembles a piece of fabric or leather",
+  "target_caption_short": "A frosted glass container",
+  "target_caption_long": "A frosted glass container filled with a single large black object that resembles a piece of fabric or leather",
+  "bbox_norm": [
+    0.0,
+    0.112955,
+    0.722532,
+    0.929543
+  ],
+  "bbox_norm_original": [
+    0.000545,
+    0.112955,
+    0.647969,
+    0.929543
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_18/00007/000075427.jpg"
+}

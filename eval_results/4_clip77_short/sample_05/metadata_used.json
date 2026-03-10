@@ -1,0 +1,20 @@
+{
+  "experiment": "4_clip77_short",
+  "description": "SDXL-Turbo + CLIP 77t, short captions (ablation: same encoder as exp1, short text)",
+  "use_long_clip": false,
+  "caption_mode": "short",
+  "source_caption": "Two cumulus congestus clouds above an airport runway. A plane taxis in the opposite direction and another is parked nearby. The closest cloud has a darker lower section. A distant cloud blends into pollution haze near the horizon.",
+  "target_caption": "Two cumulus congestus clouds above an airport runway, with an airplane preparing to land near the closest cloud. A plane taxis in the opposite direction and another is parked nearby. A distant cloud blends into pollution haze near the horizon.",
+  "source_token_est": 38,
+  "target_token_est": 40,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0,
+    "mask_choice": "wo_final_layer"
+  },
+  "seed": 42,
+  "elapsed_sec": 11.0
+}

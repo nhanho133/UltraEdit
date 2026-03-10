@@ -1,15 +1,11 @@
 {
   "sample_id": "sample_02",
   "image_filename": "2.png",
-  "edit_region": "text LEFT on rectangular street sign",
-
+  "edit_region": "text LEFT",
   "instruction": "Change the word \"LEFT\" to \"RIGHT\".",
-
   "source_caption_long": "An outdoor medium view of a partially visible metal street pole that extends upward and downward out of view. At the top left portion of the view a white rectangular shaped sign is visible on the metal pole. The rectangular sign says \"LEFT / TURN / SIGNAL\", in black with a black rectangular border around the words. The white sign is orientated or facing toward the right, and the metal pole is placed in the middle left of the view. At the bottom right of the view is the back of a yellow painted street display sign. The back of the yellow square shaped display has a front view sticker of a light yellow colored skull on it. The skull sticker is missing a portion in the top right, above the right eye socket. In the background a partially visible red brick building is within view. The overall image is visible during the day time, with no bright rays of light shining onto the view.",
-
   "source_caption_short": "A metal street pole with a white sign reading \"LEFT / TURN / SIGNAL\" in black. A yellow sign with a skull sticker is visible at the bottom right. A red brick building is in the background. Daytime.",
-
-  "target_caption_long": "An outdoor medium view of a partially visible metal street pole that extends upward and downward out of view. At the top left portion of the view a white rectangular shaped sign is visible on the metal pole. The rectangular sign says \"RIGHT / TURN / SIGNAL\" in black with a black rectangular border around the words. The white sign is orientated or facing toward the right, and the metal pole is placed in the middle left of the view. At the bottom right of the view is the back of a yellow painted street display sign. The back of the yellow square shaped display has a front view sticker of a light yellow colored skull on it. The skull sticker is missing a portion in the top right, above the right eye socket. In the background a partially visible red brick building is within view. The overall image is visible during the daytime, with no bright rays of light shining onto the view.",
-
-  "target_caption_short": "A metal street pole with a white sign reading \"RIGHT / TURN / SIGNAL\" in black. A yellow sign with a skull sticker is visible at the bottom right. A red brick building is in the background. Daytime."
+  "target_caption_long": " The rectangular sign says \"RIGHT / TURN / SIGNAL\" in black with a black rectangular border around the words.",
+  "target_caption_short": "A metal street pole with a white sign reading \"RIGHT / TURN / SIGNAL\" in black.",
+  "grounding_query": "text LEFT"
 }

@@ -1,0 +1,20 @@
+{
+  "experiment": "4_clip77_short",
+  "description": "SDXL-Turbo + CLIP 77t, short captions (ablation: same encoder as exp1, short text)",
+  "use_long_clip": false,
+  "caption_mode": "short",
+  "source_caption": "A white GEM electric cart with \"GEM eL XD\" on the fender, parked on a road. It has white panels, a steel truck bed, an orange siren light on the roof, and an orange shield emblem on the passenger door. Green meadow and trees in the background.",
+  "target_caption": "A white GEM electric cart parked on a road, with a goat standing in the metal cargo bed at the back. It has white panels, an orange siren light on the roof, and an orange shield emblem on the door. Green meadow and trees in the background.",
+  "source_token_est": 47,
+  "target_token_est": 47,
+  "sdxl_params": {
+    "soft_mask_value": 0.5,
+    "p2p_threshold": 0.7,
+    "steps": 6,
+    "strength": 0.5,
+    "guidance_scale": 0.0,
+    "mask_choice": "wo_final_layer"
+  },
+  "seed": 42,
+  "elapsed_sec": 15.5
+}

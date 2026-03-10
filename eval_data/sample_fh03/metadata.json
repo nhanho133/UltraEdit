@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh03",
+  "finehard_id": "16_981249_1_0",
+  "image_filename": "",
+  "grounding_query": "a white face",
+  "instruction": "Change \"a white face\" to \"a light green face\".",
+  "edit_region": "a white face",
+  "source_caption_short": "a white face featuring black markings such as a Border Collie or a similar breed",
+  "source_caption_long": "a white face featuring black markings such as a Border Collie or a similar breed",
+  "target_caption_short": "a light green face",
+  "target_caption_long": "a light green face featuring black markings such as a Border Collie or a similar breed",
+  "bbox_norm": [
+    0.456818,
+    0.325759,
+    0.864123,
+    0.903504
+  ],
+  "bbox_norm_original": [
+    0.47602,
+    0.325759,
+    0.702203,
+    0.903504
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_16/00098/000981249.jpg"
+}

@@ -1,15 +1,20 @@
 {
   "sample_id": "sample_03",
   "image_filename": "3.png",
-  "edit_region": "cargo bed at the back of the GEM electric cart",
-
-  "instruction": "Add a goat standing in the cargo bed at the back of the vehicle.",
-
+  "edit_region": "the grass at the cargo bed",
+  "instruction": "add a goat in the grass at the cargo bed.",
   "source_caption_long": "A medium side view of a white GEM electric cart parked on the side of the road and orientated toward the right. A large grass meadow with a large tree is visible in the background. The large tree is casting a large shadow on the meadow of short green grass and is located at the middle right of the view. Trees line the background of the frame from left to right behind the meadow, and are partially cast in shadow. The front fender of the cart has \"GEM eL XD\" written in silver letters. The cart has white body panels and a steel truck bed. The top of the truck has an orange siren light on its roof, that isn't bright during the day. An orange colored shield shaped emblem is on the passenger door. The electric cart has a shiny metal cargo box or bed on the back.",
-
   "source_caption_short": "A white GEM electric cart with \"GEM eL XD\" on the fender, parked on a road. It has white panels, a steel truck bed, an orange siren light on the roof, and an orange shield emblem on the passenger door. Green meadow and trees in the background.",
-
-  "target_caption_long": "A medium side view of a white GEM electric cart parked on the side of the road and orientated toward the right. A goat is standing in the shiny metal cargo bed at the back of the cart. A large grass meadow with a large tree is visible in the background. The large tree is casting a large shadow on the meadow of short green grass and is located at the middle right of the view. Trees line the background of the frame from left to right behind the meadow, and are partially cast in shadow. The front fender of the cart has \"GEM eL XD\" written in silver letters. The cart has white body panels and a steel truck bed. The top of the truck has an orange siren light on its roof that isn't bright during the day. An orange colored shield shaped emblem is on the passenger door. The electric cart has a shiny metal cargo box or bed on the back with the goat standing inside it.",
-
-  "target_caption_short": "A white GEM electric cart parked on a road, with a goat standing in the metal cargo bed at the back. It has white panels, an orange siren light on the roof, and an orange shield emblem on the door. Green meadow and trees in the background."
+  "target_caption_long": "A medium side view of a white GEM electric cart with a goat standing in the grass at the cargo bed. The cart is parked on the side of the road and orientated toward the right. A large grass meadow with a large tree is visible in the background. The large tree is casting a large shadow on the meadow of short green grass and is located at the middle right of the view. Trees line the background of the frame from left to right behind the meadow, and are partially cast in shadow. The front fender of the cart has \"GEM eL XD\" written in silver letters. The cart has white body panels and a steel truck bed. The top of the truck has an orange siren light on its roof, that isn't bright during the day. An orange colored shield shaped emblem is on the passenger door.",
+  "target_caption_short": "A white GEM electric cart with \"GEM eL XD\" on the fender, parked on a road, with a goat standing in the metal cargo bed at the back. It has white panels, a steel truck bed, an orange siren light on the roof, and an orange shield emblem on the passenger door. Green meadow and trees in the background.",
+  "grounding_query": "the grass at the cargo bed",
+  "mask_post_process": {
+    "op": "crop_bbox",
+    "x_min_fraction": 0.0,
+    "x_max_fraction": 0.45,
+    "y_min_fraction": 0.3,
+    "y_max_fraction": 0.52,
+    "promote_mb_to_mf": true,
+    "note": "SAM segments undercarriage (dark rows), not the open interior. crop_bbox restricts to open cargo bed interior (bright rows r05-r08, y=154-266). promote_mb_to_mf=True: entire cropped bbox becomes Mf=1.0 so AI has strong signal to place goat in this precise region."
+  }
 }

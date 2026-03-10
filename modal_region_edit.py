@@ -142,8 +142,17 @@ def download_models():
     )
     print("  Long-CLIP OK")
 
-    # 3. OpenCLIP ViT-bigG-14
-    print("[3/3] Downloading OpenCLIP ViT-bigG-14...")
+    # 3. LongCLIP-GmP ViT-L-14 (zer0int)
+    print("[3/4] Downloading LongCLIP-GmP-ViT-L-14 (zer0int)...")
+    snapshot_download(
+        "zer0int/LongCLIP-GmP-ViT-L-14",
+        cache_dir=HF_CACHE,
+        ignore_patterns=["*.msgpack", "*.h5", "flax_*"],
+    )
+    print("  LongCLIP-GmP OK")
+
+    # 4. OpenCLIP ViT-bigG-14
+    print("[4/4] Downloading OpenCLIP ViT-bigG-14...")
     if not os.path.exists(OPENCLIP_CACHE):
         bigG, _, _ = open_clip.create_model_and_transforms(
             "ViT-bigG-14", pretrained="laion2b_s39b_b160k")
@@ -271,6 +280,65 @@ def _build_longclip_embeddings(src_caption, tgt_caption, device, dtype):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
+# LONGCLIP-GmP  (zer0int/LongCLIP-GmP-ViT-L-14 + CLIP-G zeroed)
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _build_longclip_gmp_embeddings(src_caption, tgt_caption, device, dtype):
+    """
+    Dùng zer0int/LongCLIP-GmP-ViT-L-14 làm CLIP-L (248 tokens),
+    zero-out toàn bộ CLIP-G contribution → 'LongCLIP-only' mode.
+    Tương đương opendiffusionai/sdxl-longcliponly nhưng dùng GmP weights.
+
+    prompt_embeds        : [2, 248, 2048]  (768 LongCLIP-L + 1280 zeros)
+    pooled_prompt_embeds : [2, 1280]       (zeros — addition_embed_type=None nên bị bỏ qua)
+    """
+    import torch
+    from transformers import CLIPTextModel, CLIPTokenizer
+
+    MODEL_ID   = "zer0int/LongCLIP-GmP-ViT-L-14"
+    CLIP_L_DIM = 768
+    CLIP_G_DIM = 1280
+    MAX_TOKENS = 248
+
+    print(f"    [LongCLIP-GmP] Loading {MODEL_ID}...")
+    tokenizer    = CLIPTokenizer.from_pretrained(MODEL_ID, cache_dir=HF_CACHE)
+    text_encoder = CLIPTextModel.from_pretrained(
+        MODEL_ID, cache_dir=HF_CACHE
+    ).to(device).to(dtype)
+    text_encoder.eval()
+    max_pos = text_encoder.config.max_position_embeddings
+    print(f"    LongCLIP-GmP OK (max_position_embeddings={max_pos})")
+
+    def encode(caption):
+        with torch.no_grad():
+            inputs = tokenizer(
+                caption,
+                return_tensors="pt",
+                padding="max_length",
+                truncation=True,
+                max_length=MAX_TOKENS,
+            ).to(device)
+            out    = text_encoder(**inputs)
+            hidden = out.last_hidden_state.to(dtype)           # [1, 248, 768]
+            # Zero out CLIP-G contribution
+            g_zeros  = torch.zeros(1, MAX_TOKENS, CLIP_G_DIM, device=device, dtype=dtype)
+            combined = torch.cat([hidden, g_zeros], dim=-1)    # [1, 248, 2048]
+            pooled   = torch.zeros(1, CLIP_G_DIM, device=device, dtype=dtype)
+            return combined, pooled
+
+    src_pe, src_pool = encode(src_caption)
+    tgt_pe, tgt_pool = encode(tgt_caption)
+
+    del text_encoder
+    torch.cuda.empty_cache()
+
+    return {
+        "prompt_embeds":        torch.cat([src_pe,   tgt_pe],   dim=0),  # [2, 248, 2048]
+        "pooled_prompt_embeds": torch.cat([src_pool, tgt_pool], dim=0),  # [2, 1280]
+    }
+
+
+# ═════════════════════════════════════════════════════════════════════════════
 # MODAL FUNCTION
 # ═════════════════════════════════════════════════════════════════════════════
 
@@ -298,8 +366,10 @@ def run_region_edit(
     steps:           int   = 6,
     strength:        float = 0.5,
     guidance_scale:  float = 0.0,
+    mask_choice:     str   = "wo_final_layer",  # odd-only=None, all-but-last="wo_final_layer"
     seed:            int   = 42,
     use_long_clip:   bool  = False,
+    longclip_encoder: str  = "beichen",  # "beichen" | "zer0int" (GmP, CLIP-G zeroed)
     pipeline_ckpt:   str   = "stabilityai/sdxl-turbo",
     image_size:      int   = 512,
 ) -> dict:
@@ -380,9 +450,14 @@ def run_region_edit(
     longclip_embeds = None
     if use_long_clip:
         try:
-            print("  Building Long-CLIP embeddings...")
-            longclip_embeds = _build_longclip_embeddings(
-                src_cap, tgt_cap, device=device, dtype=dtype)
+            if longclip_encoder == "zer0int":
+                print("  Building LongCLIP-GmP embeddings (CLIP-G zeroed)...")
+                longclip_embeds = _build_longclip_gmp_embeddings(
+                    src_cap, tgt_cap, device=device, dtype=dtype)
+            else:  # "beichen" (default)
+                print("  Building Long-CLIP embeddings (Beichen + OpenCLIP bigG)...")
+                longclip_embeds = _build_longclip_embeddings(
+                    src_cap, tgt_cap, device=device, dtype=dtype)
             print(f"  prompt_embeds: {tuple(longclip_embeds['prompt_embeds'].shape)}")
         except Exception as e:
             print(f"  [FALLBACK] Long-CLIP failed: {e} → CLIP 77 tokens")
@@ -428,6 +503,7 @@ def run_region_edit(
         mask_image     = mf_mask,
         temp_mask      = mb_mask,
         soft_mask      = soft_mask_value,
+        mask_choice    = mask_choice,
         num_inference_steps = steps,
         strength       = strength,
         guidance_scale = guidance_scale,

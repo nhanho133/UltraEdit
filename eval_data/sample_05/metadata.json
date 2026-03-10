@@ -2,14 +2,18 @@
   "sample_id": "sample_05",
   "image_filename": "5.png",
   "edit_region": "sky area near the closest cumulus congestus cloud in the upper portion",
-
   "instruction": "Add an airplane preparing to land near the closest cloud in the image.",
-
   "source_caption_long": "A view of two cumulus congestus clouds taken from an active runway of an airport. Light bands from the sun coming through the airplane's window are visible in the upper left frame. A plane facing the opposite direction is seen taxing the runaway. To the right of the plane, there is another plane parked. The first cumulus congestus cloud in the upper left frame has a huge piece of its lower section that is darker than the rest of it. Diagonally down right from the first cumulus congestus cloud, the second cloud is further away and doesn't have any dark sections. Towards the portion of the frame where the sky and airport meet, there is a cloud far in distance blending in with the haze of pollution.",
-
   "source_caption_short": "Two cumulus congestus clouds above an airport runway. A plane taxis in the opposite direction and another is parked nearby. The closest cloud has a darker lower section. A distant cloud blends into pollution haze near the horizon.",
-
   "target_caption_long": "A view of two cumulus congestus clouds taken from an active runway of an airport. Light bands from the sun coming through the airplane's window are visible in the upper left frame. A plane facing the opposite direction is seen taxiing on the runway. To the right of the plane, there is another plane parked. Near the closest cumulus congestus cloud in the upper portion of the sky, an airplane is visible preparing to land. The first cumulus congestus cloud in the upper left frame has a huge piece of its lower section that is darker than the rest of it. Diagonally down right from the first cumulus congestus cloud, the second cloud is further away and doesn't have any dark sections. Towards the portion of the frame where the sky and airport meet, there is a cloud far in the distance blending in with the haze of pollution.",
-
-  "target_caption_short": "Two cumulus congestus clouds above an airport runway, with an airplane preparing to land near the closest cloud. A plane taxis in the opposite direction and another is parked nearby. A distant cloud blends into pollution haze near the horizon."
+  "target_caption_short": "Two cumulus congestus clouds above an airport runway, with an airplane preparing to land near the closest cloud. A plane taxis in the opposite direction and another is parked nearby. A distant cloud blends into pollution haze near the horizon.",
+  "grounding_query": "cumulus cloud",
+  "mask_post_process": {
+    "op": "crop_bbox",
+    "x_min_fraction": 0.3,
+    "x_max_fraction": 0.65,
+    "y_min_fraction": 0.28,
+    "y_max_fraction": 0.48,
+    "note": "Airplane appears in clear sky near lower-right edge of closest cloud (Box2). y=28-48%=143-245 (below cloud), x=30-65%=154-333. Small precise Mf = airplane footprint only."
+  }
 }

@@ -1,0 +1,14 @@
+{
+  "experiment": "6_sd3_long",
+  "description": "SD3 UltraEdit, src_long + instruction (T5-XXL, up to 256t)",
+  "sd3_prompt_mode": "long_src+instruction",
+  "edit_prompt": "An outdoor zoomed in upwards angled shot of the side of a concrete overpass with various graffiti writing, most prominently the bold white letters that read, \"CHINA\" in the center. Each letter of the word \"CHINA\" is in its own inlaid rectangle of the concrete overpass design. Bold white characters, \"28TH\" are visible in the rectangle immediately to the left. A traffic light is visible on the extended pole in the lower left corner. The visible sky in the background above and below the overpass is clear and light blue. Daytime. Change the word \"CHINA\" to \"USA\".",
+  "prompt_token_est": 97,
+  "sd3_params": {
+    "steps": 28,
+    "guidance_scale": 7.0,
+    "image_guidance": 1.5
+  },
+  "seed": 42,
+  "elapsed_sec": 17.5
+}

@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh05",
+  "finehard_id": "8_823123_0_0",
+  "image_filename": "",
+  "grounding_query": "a yellow fruit",
+  "instruction": "Change \"a yellow fruit\" to \"a light green fruit\".",
+  "edit_region": "a yellow fruit",
+  "source_caption_short": "a yellow fruit which seems to be a lemon resting on a gray and white cloth with a striped pattern",
+  "source_caption_long": "a yellow fruit which seems to be a lemon resting on a gray and white cloth with a striped pattern",
+  "target_caption_short": "a light green fruit",
+  "target_caption_long": "a light green fruit which seems to be a lemon resting on a gray and white cloth with a striped pattern",
+  "bbox_norm": [
+    0.721409,
+    0.0,
+    0.996515,
+    0.184809
+  ],
+  "bbox_norm_original": [
+    0.721409,
+    0.001476,
+    0.996515,
+    0.289873
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_8/00082/000823123.jpg"
+}

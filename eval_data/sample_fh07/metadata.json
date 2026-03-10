@@ -1,0 +1,25 @@
+{
+  "sample_id": "sample_fh07",
+  "finehard_id": "13_250895_0_0",
+  "image_filename": "",
+  "grounding_query": "two intertwined brown pretzels",
+  "instruction": "Change \"two intertwined brown pretzels\" to \"two intertwined copper pretzels\".",
+  "edit_region": "two intertwined brown pretzels",
+  "source_caption_short": "two intertwined brown pretzels positioned above the cookie to represent the reindeer's antlers and two small round candies one red and one blue to depict the reindeer's eyes",
+  "source_caption_long": "two intertwined brown pretzels positioned above the cookie to represent the reindeer's antlers and two small round candies one red and one blue to depict the reindeer's eyes",
+  "target_caption_short": "two intertwined copper pretzels",
+  "target_caption_long": "two intertwined copper pretzels positioned above the cookie to represent the reindeer's antlers and two small round candies one red and one blue to depict the reindeer's eyes",
+  "bbox_norm": [
+    0.006504,
+    0.168257,
+    0.386198,
+    0.610661
+  ],
+  "bbox_norm_original": [
+    0.006504,
+    0.278838,
+    0.386198,
+    0.573774
+  ],
+  "original_image_path": "grit-20m/data-12m/coyo_image_13/00025/000250895.jpg"
+}
